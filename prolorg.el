@@ -47,7 +47,7 @@ Issues a message with the failed form and returns nil on failure."
      (-reduce-from (lambda (x y) (and x (prolorg/eval-expr vars y)))
                    t values))
 
-    (`(not ,value) (not value))
+    (`(not ,value) (not (prolorg/eval-expr vars value)))
 
     (`(member ,elt ,list)
      (member (prolorg/eval-expr vars elt)
@@ -63,7 +63,7 @@ Issues a message with the failed form and returns nil on failure."
 
 (defun prolorg/excluded-keys (constraints values heading)
   (let* ((vars (mapcar (-lambda ((k . v)) (cons (intern k) v)) values))
-        ;; As a baseline, exclude all keys that are already set
+         ;; As a baseline, exclude all keys that are already set
          (exclusions (mapcar #'car vars)))
     (dolist (constraint constraints)
       (pcase constraint
@@ -83,7 +83,7 @@ Issues a message with the failed form and returns nil on failure."
         (`(iff ,antecedent ,consequent)
          (unless (symbolp consequent)
            (throw 'prolorg/invalid-iff/consequent consequent))
-         (unless (prolorg/eval-expr values antecedent)
+         (unless (prolorg/eval-expr vars antecedent)
            (add-to-list 'exclusions consequent)))
 
         (`(nand ,key1 ,key2)
@@ -103,7 +103,7 @@ Issues a message with the failed form and returns nil on failure."
   (-difference
    (prolorg/collect-keys)
    (prolorg/excluded-keys (prolorg/collect-constraints)
-                          (org-entry-properties)
+                          (org-entry-properties) ;; TODO need to inherit as well
                           (org-get-heading))))
 
 (defun prolorg/read-key ()
