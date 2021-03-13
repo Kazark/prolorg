@@ -92,6 +92,10 @@ Issues a message with the failed form and returns nil on failure."
          (if (assq key1 vars) (add-to-list 'exclusions key2)
            (if (assq key2 vars) (add-to-list 'exclusions key1))))
 
+        (`(never ,property)
+         (unless (symbolp property) (throw 'prolorg/invalid-never property))
+         (add-to-list 'exclusions property))
+
         (_ (throw 'prolorg/invalid-constraint constraint))))
     exclusions))
 
@@ -167,6 +171,9 @@ forms are supported:
       If either property is populated, don't prompt for the other.
       KEY1 is a symbol corresponding to a property.
       KEY2 is a symbol corresponding to another property.
+
+  `(never ,property)
+      Unconditionally exclude PROPERTY.
 
 The following expression forms are supported, and match their meaning in Lisp:
 
