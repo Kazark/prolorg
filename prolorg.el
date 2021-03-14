@@ -53,9 +53,18 @@ Issues a message with the failed form and returns nil on failure."
      (member (prolorg/eval-expr vars elt)
              (prolorg/eval-expr vars list)))
 
+    (`(> ,lhs ,rhs)
+     (if-let* ((a (prolorg/eval-expr vars lhs))
+               (x (cond ((stringp a) (string-to-number a))
+                        ((integerp a) a)))
+               (y (prolorg/eval-expr vars rhs)))
+         (> x y)))
+
     (`(quote ,form) form)
 
     ((pred stringp) value)
+
+    ((pred integerp) value)
 
     ((pred symbolp) (cdr (assq value vars)))
 
@@ -180,10 +189,11 @@ The following expression forms are supported, and match their meaning in Lisp:
     `(and . ,values)
     `(not ,value)
     `(member ,elt ,list)
+    `(> ,lhs ,rhs)
     `(quote ,form)
 
-Strings and symbols are also supported. Symbols are variables; the environment
-is seeded with properties but can be extended with VAR constraints.
+Strings, integers and symbols are also supported. Symbols are variables; the
+environment is seeded with properties but can be extended with VAR constraints.
 
 Throw an error when trying to set a property with an invalid name."
   (interactive)
