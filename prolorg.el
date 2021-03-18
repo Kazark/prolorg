@@ -47,6 +47,10 @@ Issues a message with the failed form and returns nil on failure."
      (-reduce-from (lambda (x y) (and x (prolorg/eval-expr vars y)))
                    t values))
 
+    (`(or . ,values)
+     (-reduce-from (lambda (x y) (or x (prolorg/eval-expr vars y)))
+                   t values))
+
     (`(not ,value) (not (prolorg/eval-expr vars value)))
 
     (`(member ,elt ,list)
@@ -57,7 +61,9 @@ Issues a message with the failed form and returns nil on failure."
      (if-let* ((a (prolorg/eval-expr vars lhs))
                (x (cond ((stringp a) (string-to-number a))
                         ((integerp a) a)))
-               (y (prolorg/eval-expr vars rhs)))
+               (b (prolorg/eval-expr vars rhs))
+               (y (cond ((stringp b) (string-to-number b))
+                        ((integerp b) b))))
          (> x y)))
 
     (`(quote ,form) form)
@@ -68,7 +74,7 @@ Issues a message with the failed form and returns nil on failure."
 
     ((pred symbolp) (cdr (assq value vars)))
 
-    (_ (throw 'prolorg/invalid-value value))))
+    (_ (throw 'prolorg/invalid-expr value))))
 
 (defun prolorg/excluded-keys (constraints values heading)
   (let* ((vars (mapcar (-lambda ((k . v)) (cons (intern k) v)) values))
