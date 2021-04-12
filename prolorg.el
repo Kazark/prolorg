@@ -5,12 +5,15 @@
 ;; Author: Keith Pinson <keith@t440p>
 ;; Keywords: data, abbrev
 
+;; Was tempted to just name it Prolog for "PROperty LOGic" but also because it
+;; is a constraint language. Decided that would be way too confusing.
+
 ;; TODO other package headers?
 ;; TODO license?
 ;; TODO how to handle dependencies?
 ;; TODO document
 
-(defun prolorg/try-read-constraint (s)
+(defun prolorg//try-read-constraint (s)
   "Read a property constraint, handling failure gracefully.
 
 Issues a message with the failed form and returns nil on failure."
@@ -20,12 +23,12 @@ Issues a message with the failed form and returns nil on failure."
 
 (defun prolorg/collect-constraints ()
   "Collect property constraints."
-  (-keep #'prolorg/try-read-constraint
+  (-keep #'prolorg//try-read-constraint
          (cdar (org-collect-keywords '("PROPERTY_CONSTRAINT")))))
 
 ;; for each xxx_ALL property, make sure the bare
 ;; xxx property is also included, not the _ALL
-(defun prolorg/property-from-all-property (p)
+(defun prolorg//property-from-all-property (p)
   (if (string-match-p "._ALL\\'" p)
       (substring p 0 -4)
     p))
@@ -37,7 +40,7 @@ Issues a message with the failed form and returns nil on failure."
         (props (mapcar (lambda (s) (nth 0 (split-string s)))
                        (cdar (org-collect-keywords '("PROPERTY"))))))
     (mapcar #'intern
-            (sort (-keep #'prolorg/property-from-all-property props)
+            (sort (-keep #'prolorg//property-from-all-property props)
                   (lambda (a b) (string< (upcase a) (upcase b)))))))
 
 (defun prolorg/eval-expr (vars value)
@@ -114,18 +117,18 @@ Issues a message with the failed form and returns nil on failure."
         (_ (throw 'prolorg/invalid-constraint constraint))))
     exclusions))
 
-(defun prolorg/entry-properties ()
+(defun prolorg//entry-properties ()
   (append
    (org-entry-properties nil 'standard)
    (save-mark-and-excursion
      (and (org-up-heading-safe)
-          (prolorg/entry-properties)))))
+          (prolorg//entry-properties)))))
 
 (defun prolorg/next-keys ()
   (-difference
    (prolorg/collect-keys)
    (prolorg/excluded-keys (prolorg/collect-constraints)
-                          (prolorg/entry-properties)
+                          (prolorg//entry-properties)
                           (org-get-heading))))
 
 (defun prolorg/read-key ()
