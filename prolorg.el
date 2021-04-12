@@ -114,11 +114,18 @@ Issues a message with the failed form and returns nil on failure."
         (_ (throw 'prolorg/invalid-constraint constraint))))
     exclusions))
 
+(defun prolorg/entry-properties ()
+  (append
+   (org-entry-properties nil 'standard)
+   (save-mark-and-excursion
+     (and (org-up-heading-safe)
+          (prolorg/entry-properties)))))
+
 (defun prolorg/next-keys ()
   (-difference
    (prolorg/collect-keys)
    (prolorg/excluded-keys (prolorg/collect-constraints)
-                          (org-entry-properties) ;; TODO need to inherit as well
+                          (prolorg/entry-properties)
                           (org-get-heading))))
 
 (defun prolorg/read-key ()
