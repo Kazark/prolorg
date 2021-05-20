@@ -69,6 +69,11 @@ Issues a message with the failed form and returns nil on failure."
                         ((integerp b) b))))
          (> x y)))
 
+    (`(equal ,lhs ,rhs)
+     (if-let* ((a (prolorg/eval-expr vars lhs))
+               (b (prolorg/eval-expr vars rhs)))
+         (equal a b)))
+
     (`(quote ,form) form)
 
     ((pred stringp) value)
@@ -206,6 +211,7 @@ The following expression forms are supported, and match their meaning in Lisp:
     `(not ,value)
     `(member ,elt ,list)
     `(> ,lhs ,rhs)
+    `(equal ,lhs ,rhs)
     `(quote ,form)
 
 Strings, integers and symbols are also supported. Symbols are variables; the
